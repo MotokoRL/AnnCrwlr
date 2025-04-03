@@ -4,9 +4,9 @@ from datetime import datetime, timedelta
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
 import time
 import random
+import os
 
 # 获取当前日期并调整日期范围，这里往前推 7 天
 start_date = (datetime.today() - timedelta(days=7)).strftime('%Y-%m-%d')
@@ -15,6 +15,10 @@ end_date = datetime.today().strftime('%Y-%m-%d')
 # 获取当前运行时间，用于生成文件名
 current_time = datetime.now().strftime('%Y-%m-%d %H-%M-%S')
 filename = f'定增公告{current_time}.xlsx'
+
+#获取桌面路径
+desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
+save_path = os.path.join(desktop_path, filename)
 
 # 巨潮资讯网公告查询接口
 url = 'http://www.cninfo.com.cn/new/hisAnnouncement/query'
@@ -96,6 +100,6 @@ driver.quit()
 df = pd.DataFrame(data_list, columns=['公司名称', '股票代码', '公告标题', '公告链接', '公告时间'])
 
 # 保存到 Excel 文件
-df.to_excel(filename, index=False)
-print(f'符合条件的公告信息已成功保存到 {filename} 文件中。')
+df.to_excel(save_path, index=False)
+print(f'符合条件的公告信息已成功保存到 {save_path} 文件中。')
 
