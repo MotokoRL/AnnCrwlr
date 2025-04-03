@@ -29,7 +29,7 @@ headers = {
 }
 
 # 总页数
-total_pages = 10
+total_pages = 1
 data_list = []
 
 # 配置 Chrome 浏览器
@@ -42,24 +42,25 @@ driver = webdriver.Chrome(service=service, options=chrome_options)
 industry_selection_url = 'http://www.cninfo.com.cn/new/commonUrl/pageOfSearch?url=disclosure/list/search'
 driver.get(industry_selection_url)
 # 等待页面加载
-WebDriverWait(driver, 20).until(
+WebDriverWait(driver, 5).until(
     EC.presence_of_element_located((By.CSS_SELECTOR, "body"))
 )
 time.sleep(random.uniform(3, 6))
 
 try:
     # 定位并点击“行业”按钮，使用新的 XPath
-    industry_button = WebDriverWait(driver, 1).until(
+    industry_button = WebDriverWait(driver, 2).until(
         EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div/div[2]/div[1]/div[2]/div/div[2]/form/div[2]/div[4]/div/div/span/button"))
     )
     industry_button.click()
     time.sleep(1)
 
     # 定位并选中“信息传输、软件和信息技术服务业”标签，使用新的 XPath
-    target_label = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.XPATH, "/html/body/div[6]/div[1]/label[9]"))
+    target_label = WebDriverWait(driver, 2).until(
+        EC.element_to_be_clickable((By.XPATH, "/html/body/div[5]/div[1]/label[9]"))
     )
-    industry_button.click()
+    target_label.click()
+    
      # 检查标签是否已选中
     if 'is-checked' not in target_label.find_element(By.XPATH, '..').get_attribute('class'):
         try:
@@ -72,11 +73,10 @@ try:
     else:
         print("标签已经被选中，无需再次点击。")
     
-
 except Exception as e:
     print(f"选中标签失败: {e}")
     
-'''
+
 for page in range(1, total_pages + 1):
     # 请求参数
     data = {
@@ -115,8 +115,9 @@ for page in range(1, total_pages + 1):
             announcementTime = datetime.fromtimestamp(announcement['announcementTime'] / 1000).strftime('%Y-%m-%d %H:%M:%S')
 
             # 筛选包含“特定对象”“定向增发”“定增”的公告
-            keywords = ['特定对象', '定向增发', '定增']
-            if any(keyword in announcementTitle for keyword in keywords):
+            include_keywords = ['特定对象', '定向增发', '定增']
+            exclude_keywords = ['债券', '终止', '撤销']
+            if any(keyword in announcementTitle for keyword in include_keywords) and not any(keyword in announcementTitle for keyword in exclude_keywords):
                 data_list.append([secName, secCode, announcementTitle, adjunctUrl, announcementTime])
 
     except requests.RequestException as e:
@@ -134,4 +135,4 @@ df = pd.DataFrame(data_list, columns=['公司名称', '股票代码', '公告标
 # 保存到 Excel 文件
 df.to_excel(filename, index=False)
 print(f'符合条件的公告信息已成功保存到 {filename} 文件中。')
-'''
+
