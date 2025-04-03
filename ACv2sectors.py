@@ -30,7 +30,7 @@ headers = {
 }
 
 # 总页数
-total_pages = 50
+total_pages = 80
 data_list = []
 
 # 配置 Chrome 浏览器
@@ -77,7 +77,7 @@ for page in range(1, total_pages + 1):
             announcementTitle = announcement['announcementTitle']
             adjunctUrl = 'http://static.cninfo.com.cn/' + announcement['adjunctUrl']
             # 提取公告时间
-            announcementTime = datetime.fromtimestamp(announcement['announcementTime'] / 1000).strftime('%Y-%m-%d %H:%M:%S')
+            announcementTime = datetime.fromtimestamp(announcement['announcementTime'] / 1000).strftime('%Y-%m-%d')
            
             # 筛选包含“特定对象”“定向增发”“定增”的公告
             include_keywords = ['特定对象', '定向增发', '定增']
