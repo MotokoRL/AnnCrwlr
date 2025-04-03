@@ -29,7 +29,7 @@ headers = {
 }
 
 # 总页数
-total_pages = 1
+total_pages = 50
 data_list = []
 
 # 配置 Chrome 浏览器
@@ -38,44 +38,6 @@ chrome_options.add_argument('--headless')  # 无头模式，不显示浏览器�
 service = Service('D:\Program Files\chromedriver\chromedriver.exe')  # 请替换为你的 ChromeDriver 路径
 driver = webdriver.Chrome(service=service, options=chrome_options)
 
-# 打开新的可以选择行业的网页
-industry_selection_url = 'http://www.cninfo.com.cn/new/commonUrl/pageOfSearch?url=disclosure/list/search'
-driver.get(industry_selection_url)
-# 等待页面加载
-WebDriverWait(driver, 5).until(
-    EC.presence_of_element_located((By.CSS_SELECTOR, "body"))
-)
-time.sleep(random.uniform(3, 6))
-
-try:
-    # 定位并点击“行业”按钮，使用新的 XPath
-    industry_button = WebDriverWait(driver, 2).until(
-        EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div/div[2]/div[1]/div[2]/div/div[2]/form/div[2]/div[4]/div/div/span/button"))
-    )
-    industry_button.click()
-    time.sleep(1)
-
-    # 定位并选中“信息传输、软件和信息技术服务业”标签，使用新的 XPath
-    target_label = WebDriverWait(driver, 2).until(
-        EC.element_to_be_clickable((By.XPATH, "/html/body/div[5]/div[1]/label[9]"))
-    )
-    target_label.click()
-    
-     # 检查标签是否已选中
-    if 'is-checked' not in target_label.find_element(By.XPATH, '..').get_attribute('class'):
-        try:
-            # 尝试直接点击
-            target_label.click()
-        except:
-            # 若直接点击失败，使用 JavaScript 模拟点击
-            driver.execute_script("arguments[0].click();", target_label)
-        time.sleep(random.uniform(3, 6))
-    else:
-        print("标签已经被选中，无需再次点击。")
-    
-except Exception as e:
-    print(f"选中标签失败: {e}")
-    
 
 for page in range(1, total_pages + 1):
     # 请求参数
@@ -85,16 +47,17 @@ for page in range(1, total_pages + 1):
         'column':'szse',  # 深圳证券交易所，可根据需要调整为 shse（上海证券交易所）等
         'tabName': 'fulltext',
         'plate': '',
-       'stock': '',
-       'searchkey': '',
-       'secid': '',
-        'category': '',
-        'trade': '',
-       'seDate': f'{start_date}~{end_date}',  # 使用调整后的日期范围
-       'sortName': '',
-       'sortType': '',
+        'stock': '',
+        'searchkey': '',
+        'secid': '',
+        'category': '',#category_zf_szsh
+        'trade': '信息传输、软件和信息技术服务业',
+        'seDate': f'',  # 使用调整后的日期范围yyyy-mm-dd 2025-04-02~2025-04-03
+        'sortName': '',
+        'sortType': '',
         'isHLtitle': 'true'
     }
+    
 
     try:
         # 发送 POST 请求
@@ -104,6 +67,7 @@ for page in range(1, total_pages + 1):
 
         # 解析 JSON 数据
         result = response.json()
+
         announcements = result['announcements']
 
         for announcement in announcements:
@@ -113,12 +77,14 @@ for page in range(1, total_pages + 1):
             adjunctUrl = 'http://static.cninfo.com.cn/' + announcement['adjunctUrl']
             # 提取公告时间
             announcementTime = datetime.fromtimestamp(announcement['announcementTime'] / 1000).strftime('%Y-%m-%d %H:%M:%S')
-
+           
             # 筛选包含“特定对象”“定向增发”“定增”的公告
             include_keywords = ['特定对象', '定向增发', '定增']
-            exclude_keywords = ['债券', '终止', '撤销']
+            exclude_keywords = ['债券','撤销']
             if any(keyword in announcementTitle for keyword in include_keywords) and not any(keyword in announcementTitle for keyword in exclude_keywords):
+
                 data_list.append([secName, secCode, announcementTitle, adjunctUrl, announcementTime])
+
 
     except requests.RequestException as e:
         print(f'第 {page} 页公告列表请求出错: {e}')
